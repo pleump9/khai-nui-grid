@@ -8,15 +8,24 @@
 #property version   "1.00"
 #property strict
 
-// กำหนดตัวแปรสำหรับราคาน้อยสุดและมากสุด
-input double MinPrice = 1.1000;  // ราคาน้อยสุดที่กำหนด
-input double MaxPrice = 1.2000;  // ราคามากสุดที่กำหนด
-input double LotSize = 0.1;      // ขนาดล็อตของออเดอร์
-input int Slippage = 3;          // ค่า Slippage ที่ยอมรับได้
-input int MagicNumber = 12345;   // Magic Number สำหรับออเดอร์
-input double TP_Distance = 50;   // ระยะ Take Profit (จุด)
-input double Grid_Distance = 20; // ระยะ Grid (จุด) สำหรับเปิดออเดอร์เพิ่ม
-input bool EnableBuy = true;     // เปิดหรือปิดการเปิดออเดอร์ Buy
+// กำหนดตัวแปรสำหรับฝั่ง Buy
+input double MinBuyPrice = 1.1000;    // ราคาน้อยสุดที่กำหนดสำหรับฝั่ง Buy
+input double MaxBuyPrice = 1.2000;    // ราคามากสุดที่กำหนดสำหรับฝั่ง Buy
+input double BuyLotSize = 0.1;        // ขนาดล็อตของออเดอร์ Buy
+input double BuyTP_Distance = 50;     // ระยะ Take Profit (จุด) สำหรับฝั่ง Buy
+input double BuyGrid_Distance = 20;   // ระยะ Grid (จุด) สำหรับเปิดออเดอร์ Buy เพิ่ม
+input bool EnableBuy = true;          // เปิดหรือปิดการเปิดออเดอร์ Buy
+
+// กำหนดตัวแปรสำหรับฝั่ง Sell
+input double MinSellPrice = 1.2000;   // ราคาน้อยสุดที่กำหนดสำหรับฝั่ง Sell
+input double MaxSellPrice = 1.3000;   // ราคามากสุดที่กำหนดสำหรับฝั่ง Sell
+input double SellLotSize = 0.1;       // ขนาดล็อตของออเดอร์ Sell
+input double SellTP_Distance = 50;    // ระยะ Take Profit (จุด) สำหรับฝั่ง Sell
+input double SellGrid_Distance = 20;  // ระยะ Grid (จุด) สำหรับเปิดออเดอร์ Sell เพิ่ม
+input bool EnableSell = true;         // เปิดหรือปิดการเปิดออเดอร์ Sell
+
+input int Slippage = 3;               // ค่า Slippage ที่ยอมรับได้
+input int MagicNumber = 12345;        // Magic Number สำหรับออเดอร์
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -36,66 +45,109 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 void OnTick()
   {
-// ตรวจสอบว่าอนุญาตให้เปิดออเดอร์ Buy หรือไม่
-   if(!EnableBuy)
-     {
-      return; // หากไม่อนุญาต จะไม่ทำอะไรใน OnTick
-     }
-
    double currentPrice = MarketInfo(Symbol(), MODE_BID); // ราคาปัจจุบัน
 
-// ตรวจสอบว่าราคาปัจจุบันอยู่ในช่วงที่กำหนด
-   if(currentPrice >= MinPrice && currentPrice <= MaxPrice)
+// ฝั่ง Buy
+   if(EnableBuy && currentPrice >= MinBuyPrice && currentPrice <= MaxBuyPrice)
      {
-      // ตรวจสอบว่ามีออเดอร์ Buy ที่เปิดอยู่โดย EA นี้หรือไม่
       bool buyExists = false;
-      double minOpenPrice = DBL_MAX; // กำหนดค่าเริ่มต้นเป็นค่ามากที่สุดที่เป็นไปได้
+      double minBuyOpenPrice = DBL_MAX;
 
       for(int i=0; i<OrdersTotal(); i++)
         {
          if(OrderSelect(i, SELECT_BY_POS) && OrderType() == OP_BUY && OrderMagicNumber() == MagicNumber)
            {
             buyExists = true;
-            if(OrderOpenPrice() < minOpenPrice)
+            if(OrderOpenPrice() < minBuyOpenPrice)
               {
-               minOpenPrice = OrderOpenPrice(); // หา openPrice ที่ต่ำที่สุด
+               minBuyOpenPrice = OrderOpenPrice();
               }
            }
         }
 
-      // ถ้าไม่มีออเดอร์ Buy อยู่ จะเปิดออเดอร์ Buy ใหม่
       if(!buyExists)
         {
-         double tpPrice = currentPrice + TP_Distance * Point;
-         int ticket = OrderSend(Symbol(), OP_BUY, LotSize, currentPrice, Slippage, 0, tpPrice, "Buy order", MagicNumber, 0, Blue);
-         if(ticket < 0)
+         double buyTPPrice = currentPrice + BuyTP_Distance * Point;
+         int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, currentPrice, Slippage, 0, buyTPPrice, "Buy order", MagicNumber, 0, Blue);
+         if(buyTicket < 0)
            {
-            Print("Error opening order: ", GetLastError());
+            Print("Error opening Buy order: ", GetLastError());
            }
          else
            {
-            Print("Order opened successfully: ", ticket);
+            Print("Buy order opened successfully: ", buyTicket);
            }
         }
       else
         {
-         // ตรวจสอบเพื่อเปิดออเดอร์เพิ่มในระยะ Grid
-         double gridPrice = minOpenPrice - Grid_Distance * Point;
+         double buyGridPrice = minBuyOpenPrice - BuyGrid_Distance * Point;
 
-         if(currentPrice <= gridPrice)
+         if(currentPrice <= buyGridPrice)
            {
-            double tpPrice = currentPrice + TP_Distance * Point;
-            int ticket = OrderSend(Symbol(), OP_BUY, LotSize, currentPrice, Slippage, 0, tpPrice, "Grid Buy order", MagicNumber, 0, Blue);
-            if(ticket < 0)
+            double buyTPPrice = currentPrice + BuyTP_Distance * Point;
+            int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, currentPrice, Slippage, 0, buyTPPrice, "Grid Buy order", MagicNumber, 0, Blue);
+            if(buyTicket < 0)
               {
-               Print("Error opening grid order: ", GetLastError());
+               Print("Error opening Grid Buy order: ", GetLastError());
               }
             else
               {
-               Print("Grid order opened successfully: ", ticket);
+               Print("Grid Buy order opened successfully: ", buyTicket);
+              }
+           }
+        }
+     }
+
+// ฝั่ง Sell
+   if(EnableSell && currentPrice >= MinSellPrice && currentPrice <= MaxSellPrice)
+     {
+      bool sellExists = false;
+      double maxSellOpenPrice = 0;
+
+      for(int i=0; i<OrdersTotal(); i++)
+        {
+         if(OrderSelect(i, SELECT_BY_POS) && OrderType() == OP_SELL && OrderMagicNumber() == MagicNumber)
+           {
+            sellExists = true;
+            if(OrderOpenPrice() > maxSellOpenPrice)
+              {
+               maxSellOpenPrice = OrderOpenPrice();
+              }
+           }
+        }
+
+      if(!sellExists)
+        {
+         double sellTPPrice = currentPrice - SellTP_Distance * Point;
+         int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, currentPrice, Slippage, 0, sellTPPrice, "Sell order", MagicNumber, 0, Red);
+         if(sellTicket < 0)
+           {
+            Print("Error opening Sell order: ", GetLastError());
+           }
+         else
+           {
+            Print("Sell order opened successfully: ", sellTicket);
+           }
+        }
+      else
+        {
+         double sellGridPrice = maxSellOpenPrice + SellGrid_Distance * Point;
+
+         if(currentPrice >= sellGridPrice)
+           {
+            double sellTPPrice = currentPrice - SellTP_Distance * Point;
+            int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, currentPrice, Slippage, 0, sellTPPrice, "Grid Sell order", MagicNumber, 0, Red);
+            if(sellTicket < 0)
+              {
+               Print("Error opening Grid Sell order: ", GetLastError());
+              }
+            else
+              {
+               Print("Grid Sell order opened successfully: ", sellTicket);
               }
            }
         }
      }
   }
+//+------------------------------------------------------------------+
 //+------------------------------------------------------------------+
