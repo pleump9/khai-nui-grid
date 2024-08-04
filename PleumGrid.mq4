@@ -1,9 +1,9 @@
 //+------------------------------------------------------------------+
 //|                                                    PleumGrid.mq4 |
-//|                                  Copyright 2024, MetaQuotes Ltd. |
+//|                              Copyright 2024, The Market Survivor |
 //|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2024, MetaQuotes Ltd."
+#property copyright "Copyright 2024, The Market Survivor"
 #property link      "https://www.mql5.com"
 #property version   "1.00"
 #property strict
@@ -47,13 +47,37 @@ void OnTick()
   {
    double currentPrice = MarketInfo(Symbol(), MODE_BID); // ราคาปัจจุบัน
 
+   int buyCount = 0;          // จำนวนไม้ Buy
+   double buyProfit = 0;      // ผลรวมกำไร/ขาดทุนของฝั่ง Buy
+   int sellCount = 0;         // จำนวนไม้ Sell
+   double sellProfit = 0;     // ผลรวมกำไร/ขาดทุนของฝั่ง Sell
+
+// ตรวจสอบทุกออเดอร์เพื่อคำนวณจำนวนและกำไร/ขาดทุน
+   for(int i = 0; i < OrdersTotal(); i++)
+     {
+      if(OrderSelect(i, SELECT_BY_POS))
+        {
+         if(OrderType() == OP_BUY && OrderMagicNumber() == MagicNumber)
+           {
+            buyCount++;
+            buyProfit += OrderProfit();
+           }
+         else
+            if(OrderType() == OP_SELL && OrderMagicNumber() == MagicNumber)
+              {
+               sellCount++;
+               sellProfit += OrderProfit();
+              }
+        }
+     }
+
 // ฝั่ง Buy
    if(EnableBuy && currentPrice >= MinBuyPrice && currentPrice <= MaxBuyPrice)
      {
       bool buyExists = false;
       double minBuyOpenPrice = DBL_MAX;
 
-      for(int i=0; i<OrdersTotal(); i++)
+      for(int i = 0; i < OrdersTotal(); i++)
         {
          if(OrderSelect(i, SELECT_BY_POS) && OrderType() == OP_BUY && OrderMagicNumber() == MagicNumber)
            {
@@ -104,7 +128,7 @@ void OnTick()
       bool sellExists = false;
       double maxSellOpenPrice = 0;
 
-      for(int i=0; i<OrdersTotal(); i++)
+      for(int i = 0; i < OrdersTotal(); i++)
         {
          if(OrderSelect(i, SELECT_BY_POS) && OrderType() == OP_SELL && OrderMagicNumber() == MagicNumber)
            {
@@ -148,6 +172,10 @@ void OnTick()
            }
         }
      }
+
+// แสดงผลบนหน้าจอ
+   string sellInfo = StringFormat("Sell Orders: %d \nSell Profit: %.2f \n--------------------", sellCount, sellProfit);
+   string buyInfo = StringFormat("Buy Orders: %d \nBuy Profit: %.2f \n--------------------", buyCount, buyProfit);
+   Comment(sellInfo + "\n" + buyInfo);
   }
-//+------------------------------------------------------------------+
 //+------------------------------------------------------------------+
