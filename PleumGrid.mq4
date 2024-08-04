@@ -51,6 +51,8 @@ void OnTick()
    double buyProfit = 0;      // ผลรวมกำไร/ขาดทุนของฝั่ง Buy
    int sellCount = 0;         // จำนวนไม้ Sell
    double sellProfit = 0;     // ผลรวมกำไร/ขาดทุนของฝั่ง Sell
+   int totalOrders = 0;       // จำนวนออเดอร์ทั้งหมด
+   double totalProfit = 0;    // ผลรวมกำไร/ขาดทุนของทุกออเดอร์
 
 // ตรวจสอบทุกออเดอร์เพื่อคำนวณจำนวนและกำไร/ขาดทุน
    for(int i = 0; i < OrdersTotal(); i++)
@@ -68,6 +70,10 @@ void OnTick()
                sellCount++;
                sellProfit += OrderProfit();
               }
+
+         // คำนวณจำนวนและกำไร/ขาดทุนรวมของทุกออเดอร์
+         totalOrders++;
+         totalProfit += OrderProfit();
         }
      }
 
@@ -174,8 +180,26 @@ void OnTick()
      }
 
 // แสดงผลบนหน้าจอ
-   string sellInfo = StringFormat("Sell Orders: %d \nSell Profit: %.2f \n--------------------", sellCount, sellProfit);
-   string buyInfo = StringFormat("Buy Orders: %d \nBuy Profit: %.2f \n--------------------", buyCount, buyProfit);
-   Comment(sellInfo + "\n" + buyInfo);
+   string sellInfo = StringFormat("Sell Orders: %d \nSell Profit: %.2f", sellCount, sellProfit);
+   string buyInfo = StringFormat("Buy Orders: %d \nBuy Profit: %.2f", buyCount, buyProfit);
+   string totalInfo = StringFormat("Total Orders: %d \nTotal Profit: %.2f", totalOrders, totalProfit);
+   Comment(
+      "\n" +
+      "--------------------" +
+      "\n" +
+      "PleumGrid" +
+      "\n" +
+      "--------------------" +
+      "\n" +
+      sellInfo +
+      "\n" +
+      "--------------------" +
+      "\n" +
+      buyInfo +
+      "\n" +
+      "--------------------" +
+      "\n" +
+      totalInfo
+   );
   }
 //+------------------------------------------------------------------+
