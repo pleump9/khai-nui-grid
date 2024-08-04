@@ -1,31 +1,31 @@
 //+------------------------------------------------------------------+
 //|                                                    PleumGrid.mq4 |
 //|                              Copyright 2024, The Market Survivor |
-//|                                             https://www.mql5.com |
+//|                       https://www.facebook.com/TheMarketSurvivor |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2024, The Market Survivor"
-#property link      "https://www.mql5.com"
+#property link      "https://www.facebook.com/TheMarketSurvivor"
 #property version   "1.00"
 #property strict
 
-// กำหนดตัวแปรสำหรับฝั่ง Buy
-input double MinBuyPrice = 1.1000;    // ราคาน้อยสุดที่กำหนดสำหรับฝั่ง Buy
-input double MaxBuyPrice = 1.2000;    // ราคามากสุดที่กำหนดสำหรับฝั่ง Buy
-input double BuyLotSize = 0.1;        // ขนาดล็อตของออเดอร์ Buy
-input double BuyTP_Distance = 50;     // ระยะ Take Profit (จุด) สำหรับฝั่ง Buy
-input double BuyGrid_Distance = 20;   // ระยะ Grid (จุด) สำหรับเปิดออเดอร์ Buy เพิ่ม
-input bool EnableBuy = true;          // เปิดหรือปิดการเปิดออเดอร์ Buy
+// Variables for Buy orders
+input double MinBuyPrice = 1.1000;    // Minimum price for Buy orders
+input double MaxBuyPrice = 1.2000;    // Maximum price for Buy orders
+input double BuyLotSize = 0.1;        // Lot size for Buy orders
+input double BuyTP_Distance = 50;     // Take Profit distance (points) for Buy orders
+input double BuyGrid_Distance = 20;   // Grid distance (points) for opening additional Buy orders
+input bool EnableBuy = true;          // Enable or disable Buy orders
 
-// กำหนดตัวแปรสำหรับฝั่ง Sell
-input double MinSellPrice = 1.2000;   // ราคาน้อยสุดที่กำหนดสำหรับฝั่ง Sell
-input double MaxSellPrice = 1.3000;   // ราคามากสุดที่กำหนดสำหรับฝั่ง Sell
-input double SellLotSize = 0.1;       // ขนาดล็อตของออเดอร์ Sell
-input double SellTP_Distance = 50;    // ระยะ Take Profit (จุด) สำหรับฝั่ง Sell
-input double SellGrid_Distance = 20;  // ระยะ Grid (จุด) สำหรับเปิดออเดอร์ Sell เพิ่ม
-input bool EnableSell = true;         // เปิดหรือปิดการเปิดออเดอร์ Sell
+// Variables for Sell orders
+input double MinSellPrice = 1.2000;   // Minimum price for Sell orders
+input double MaxSellPrice = 1.3000;   // Maximum price for Sell orders
+input double SellLotSize = 0.1;       // Lot size for Sell orders
+input double SellTP_Distance = 50;    // Take Profit distance (points) for Sell orders
+input double SellGrid_Distance = 20;  // Grid distance (points) for opening additional Sell orders
+input bool EnableSell = true;         // Enable or disable Sell orders
 
-input int Slippage = 3;               // ค่า Slippage ที่ยอมรับได้
-input int MagicNumber = 12345;        // Magic Number สำหรับออเดอร์
+input int Slippage = 3;               // Acceptable slippage
+input int MagicNumber = 12345;        // Magic Number for orders
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -45,16 +45,16 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 void OnTick()
   {
-   double currentPrice = MarketInfo(Symbol(), MODE_BID); // ราคาปัจจุบัน
+   double currentPrice = MarketInfo(Symbol(), MODE_BID); // Current price
 
-   int buyCount = 0;          // จำนวนไม้ Buy
-   double buyProfit = 0;      // ผลรวมกำไร/ขาดทุนของฝั่ง Buy
-   int sellCount = 0;         // จำนวนไม้ Sell
-   double sellProfit = 0;     // ผลรวมกำไร/ขาดทุนของฝั่ง Sell
-   int totalOrders = 0;       // จำนวนออเดอร์ทั้งหมด
-   double totalProfit = 0;    // ผลรวมกำไร/ขาดทุนของทุกออเดอร์
+   int buyCount = 0;          // Number of Buy orders
+   double buyProfit = 0;      // Total profit/loss for Buy orders
+   int sellCount = 0;         // Number of Sell orders
+   double sellProfit = 0;     // Total profit/loss for Sell orders
+   int totalOrders = 0;       // Total number of orders
+   double totalProfit = 0;    // Total profit/loss for all orders
 
-// ตรวจสอบทุกออเดอร์เพื่อคำนวณจำนวนและกำไร/ขาดทุน
+// Check all orders to calculate the count and profit/loss
    for(int i = 0; i < OrdersTotal(); i++)
      {
       if(OrderSelect(i, SELECT_BY_POS))
@@ -71,13 +71,13 @@ void OnTick()
                sellProfit += OrderProfit();
               }
 
-         // คำนวณจำนวนและกำไร/ขาดทุนรวมของทุกออเดอร์
+         // Calculate the total count and profit/loss of all orders
          totalOrders++;
          totalProfit += OrderProfit();
         }
      }
 
-// ฝั่ง Buy
+// Buy orders logic
    if(EnableBuy && currentPrice >= MinBuyPrice && currentPrice <= MaxBuyPrice)
      {
       bool buyExists = false;
@@ -128,7 +128,7 @@ void OnTick()
         }
      }
 
-// ฝั่ง Sell
+// Sell orders logic
    if(EnableSell && currentPrice >= MinSellPrice && currentPrice <= MaxSellPrice)
      {
       bool sellExists = false;
@@ -179,7 +179,7 @@ void OnTick()
         }
      }
 
-// แสดงผลบนหน้าจอ
+// Display results on the screen
    string sellInfo = StringFormat("Sell Orders: %d \nSell Profit: %.2f", sellCount, sellProfit);
    string buyInfo = StringFormat("Buy Orders: %d \nBuy Profit: %.2f", buyCount, buyProfit);
    string totalInfo = StringFormat("Total Orders: %d \nTotal Profit: %.2f", totalOrders, totalProfit);
