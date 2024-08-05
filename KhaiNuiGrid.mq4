@@ -31,6 +31,12 @@ input string OtherSetting = "----- Other settings -----"; // Other settings
 input int Slippage = 3;               // Acceptable slippage
 input int MagicNumber = 12345;        // Magic Number for orders
 
+string EA_NAME = "KhaiNuiGrid";
+string Owner = "The Market Survivor";
+string OwnerLink = "https://www.facebook.com/TheMarketSurvivor";
+
+string eaInfo = EA_NAME + "\n" + Owner + "\n" + OwnerLink;
+
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -49,7 +55,8 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 void OnTick()
   {
-   double currentPrice = MarketInfo(Symbol(), MODE_BID); // Current price
+   double sellCurrentPrice = MarketInfo(Symbol(), MODE_BID); // Sell Current price
+   double buyCurrentPrice = MarketInfo(Symbol(), MODE_ASK); // Buy Current price
 
    int buyCount = 0;          // Number of Buy orders
    double buyProfit = 0;      // Total profit/loss for Buy orders
@@ -82,7 +89,7 @@ void OnTick()
      }
 
 // Buy orders logic
-   if(EnableBuy && currentPrice >= MinBuyPrice && currentPrice <= MaxBuyPrice)
+   if(EnableBuy && buyCurrentPrice >= MinBuyPrice && buyCurrentPrice <= MaxBuyPrice)
      {
       bool buyExists = false;
       double minBuyOpenPrice = DBL_MAX;
@@ -101,8 +108,8 @@ void OnTick()
 
       if(!buyExists)
         {
-         double buyTPPrice = currentPrice + BuyTP_Distance * Point;
-         int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, currentPrice, Slippage, 0, buyTPPrice, "Buy order", MagicNumber, 0, Blue);
+         double buyTPPrice = buyCurrentPrice + BuyTP_Distance * Point;
+         int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, buyCurrentPrice, Slippage, 0, buyTPPrice, "Buy order", MagicNumber, 0, Blue);
          if(buyTicket < 0)
            {
             Print("Error opening Buy order: ", GetLastError());
@@ -116,10 +123,10 @@ void OnTick()
         {
          double buyGridPrice = minBuyOpenPrice - BuyGrid_Distance * Point;
 
-         if(currentPrice <= buyGridPrice)
+         if(buyCurrentPrice <= buyGridPrice)
            {
-            double buyTPPrice = currentPrice + BuyTP_Distance * Point;
-            int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, currentPrice, Slippage, 0, buyTPPrice, "Grid Buy order", MagicNumber, 0, Blue);
+            double buyTPPrice = buyCurrentPrice + BuyTP_Distance * Point;
+            int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, buyCurrentPrice, Slippage, 0, buyTPPrice, "Grid Buy order", MagicNumber, 0, Blue);
             if(buyTicket < 0)
               {
                Print("Error opening Grid Buy order: ", GetLastError());
@@ -133,7 +140,7 @@ void OnTick()
      }
 
 // Sell orders logic
-   if(EnableSell && currentPrice >= MinSellPrice && currentPrice <= MaxSellPrice)
+   if(EnableSell && sellCurrentPrice >= MinSellPrice && sellCurrentPrice <= MaxSellPrice)
      {
       bool sellExists = false;
       double maxSellOpenPrice = 0;
@@ -152,8 +159,8 @@ void OnTick()
 
       if(!sellExists)
         {
-         double sellTPPrice = currentPrice - SellTP_Distance * Point;
-         int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, currentPrice, Slippage, 0, sellTPPrice, "Sell order", MagicNumber, 0, Red);
+         double sellTPPrice = sellCurrentPrice - SellTP_Distance * Point;
+         int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, sellCurrentPrice, Slippage, 0, sellTPPrice, "Sell order", MagicNumber, 0, Red);
          if(sellTicket < 0)
            {
             Print("Error opening Sell order: ", GetLastError());
@@ -167,10 +174,10 @@ void OnTick()
         {
          double sellGridPrice = maxSellOpenPrice + SellGrid_Distance * Point;
 
-         if(currentPrice >= sellGridPrice)
+         if(sellCurrentPrice >= sellGridPrice)
            {
-            double sellTPPrice = currentPrice - SellTP_Distance * Point;
-            int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, currentPrice, Slippage, 0, sellTPPrice, "Grid Sell order", MagicNumber, 0, Red);
+            double sellTPPrice = sellCurrentPrice - SellTP_Distance * Point;
+            int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, sellCurrentPrice, Slippage, 0, sellTPPrice, "Grid Sell order", MagicNumber, 0, Red);
             if(sellTicket < 0)
               {
                Print("Error opening Grid Sell order: ", GetLastError());
@@ -191,7 +198,7 @@ void OnTick()
       "\n" +
       "--------------------" +
       "\n" +
-      "PleumGrid" +
+      eaInfo +
       "\n" +
       "--------------------" +
       "\n" +
@@ -203,7 +210,9 @@ void OnTick()
       "\n" +
       "--------------------" +
       "\n" +
-      totalInfo
+      totalInfo +
+      "\n" +
+      "--------------------"
    );
   }
 //+------------------------------------------------------------------+
