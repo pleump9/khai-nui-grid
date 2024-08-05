@@ -9,20 +9,20 @@
 #property strict
 
 // Variables for Buy orders
+input bool EnableBuy = true;          // Enable or disable Buy orders
 input double MinBuyPrice = 1.1000;    // Minimum price for Buy orders
 input double MaxBuyPrice = 1.2000;    // Maximum price for Buy orders
 input double BuyLotSize = 0.1;        // Lot size for Buy orders
 input double BuyTP_Distance = 50;     // Take Profit distance (points) for Buy orders
 input double BuyGrid_Distance = 20;   // Grid distance (points) for opening additional Buy orders
-input bool EnableBuy = true;          // Enable or disable Buy orders
 
 // Variables for Sell orders
+input bool EnableSell = true;         // Enable or disable Sell orders
 input double MinSellPrice = 1.2000;   // Minimum price for Sell orders
 input double MaxSellPrice = 1.3000;   // Maximum price for Sell orders
 input double SellLotSize = 0.1;       // Lot size for Sell orders
 input double SellTP_Distance = 50;    // Take Profit distance (points) for Sell orders
 input double SellGrid_Distance = 20;  // Grid distance (points) for opening additional Sell orders
-input bool EnableSell = true;         // Enable or disable Sell orders
 
 input int Slippage = 3;               // Acceptable slippage
 input int MagicNumber = 12345;        // Magic Number for orders
