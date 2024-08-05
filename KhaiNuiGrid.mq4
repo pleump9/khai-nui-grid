@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                                    PleumGrid.mq4 |
+//|                                                  KhaiNuiGrid.mq4 |
 //|                              Copyright 2024, The Market Survivor |
 //|                       https://www.facebook.com/TheMarketSurvivor |
 //+------------------------------------------------------------------+
