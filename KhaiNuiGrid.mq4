@@ -11,20 +11,20 @@
 // Variables for Buy orders
 input string BuySetting = "----- Buy Orders Settings -----"; // Buy Orders Settings
 input bool EnableBuy = true;          // Enable or disable Buy orders
-input double MinBuyPrice = 1.1000;    // Minimum price for Buy orders
-input double MaxBuyPrice = 1.2000;    // Maximum price for Buy orders
-input double BuyLotSize = 0.1;        // Lot size for Buy orders
+input double MinBuyPrice = 0.0;    // Minimum price for Buy orders
+input double MaxBuyPrice = 10000.0;    // Maximum price for Buy orders
+input double BuyLotSize = 0.01;        // Lot size for Buy orders
 input double BuyTP_Distance = 50;     // Take Profit distance (points) for Buy orders
-input double BuyGrid_Distance = 20;   // Grid distance (points) for opening additional Buy orders
+input double BuyGrid_Distance = 50;   // Grid distance (points) for opening additional Buy orders
 
 // Variables for Sell orders
 input string SellSetting = "----- Sell Orders Settings -----"; // Sell Orders Settings
 input bool EnableSell = true;         // Enable or disable Sell orders
-input double MinSellPrice = 1.2000;   // Minimum price for Sell orders
-input double MaxSellPrice = 1.3000;   // Maximum price for Sell orders
-input double SellLotSize = 0.1;       // Lot size for Sell orders
+input double MinSellPrice = 0.0;   // Minimum price for Sell orders
+input double MaxSellPrice = 10000.0;   // Maximum price for Sell orders
+input double SellLotSize = 0.01;       // Lot size for Sell orders
 input double SellTP_Distance = 50;    // Take Profit distance (points) for Sell orders
-input double SellGrid_Distance = 20;  // Grid distance (points) for opening additional Sell orders
+input double SellGrid_Distance = 50;  // Grid distance (points) for opening additional Sell orders
 
 // Variables for Other Setting
 input string OtherSetting = "----- Other settings -----"; // Other settings
@@ -55,6 +55,16 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 void OnTick()
   {
+   string validateDescription=""; // For Validation
+// Validation
+   if(!CheckVolumeValue(BuyLotSize, validateDescription) || !CheckVolumeValue(SellLotSize, validateDescription))
+     {
+      Print("Volume is invalid: ", validateDescription);
+      return;
+     }
+
+
+// Logic
    double sellCurrentPrice = MarketInfo(Symbol(), MODE_BID); // Sell Current price
    double buyCurrentPrice = MarketInfo(Symbol(), MODE_ASK); // Buy Current price
 
@@ -215,4 +225,41 @@ void OnTick()
       "--------------------"
    );
   }
+
+//+------------------------------------------------------------------+
+//| Check the correctness of the order volume                        |
+//+------------------------------------------------------------------+
+bool CheckVolumeValue(double volume,string &description)
+  {
+//--- minimal allowed volume for trade operations
+   double min_volume=SymbolInfoDouble(Symbol(),SYMBOL_VOLUME_MIN);
+   if(volume<min_volume)
+     {
+      description=StringFormat("Volume is less than the minimal allowed SYMBOL_VOLUME_MIN=%.2f",min_volume);
+      return(false);
+     }
+
+//--- maximal allowed volume of trade operations
+   double max_volume=SymbolInfoDouble(Symbol(),SYMBOL_VOLUME_MAX);
+   if(volume>max_volume)
+     {
+      description=StringFormat("Volume is greater than the maximal allowed SYMBOL_VOLUME_MAX=%.2f",max_volume);
+      return(false);
+     }
+
+//--- get minimal step of volume changing
+   double volume_step=SymbolInfoDouble(Symbol(),SYMBOL_VOLUME_STEP);
+
+   int ratio=(int)MathRound(volume/volume_step);
+   if(MathAbs(ratio*volume_step-volume)>0.0000001)
+     {
+      description=StringFormat("Volume is not a multiple of the minimal step SYMBOL_VOLUME_STEP=%.2f, the closest correct volume is %.2f",
+                               volume_step,ratio*volume_step);
+      return(false);
+     }
+   description="Correct volume value";
+   return(true);
+  }
+//+------------------------------------------------------------------+
+
 //+------------------------------------------------------------------+
