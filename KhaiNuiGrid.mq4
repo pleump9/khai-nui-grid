@@ -16,6 +16,7 @@ input double MaxBuyPrice = 10000.0;    // Maximum price for Buy orders
 input double BuyLotSize = 0.01;        // Lot size for Buy orders
 input double BuyTP_Distance = 50;     // Take Profit distance (points) for Buy orders
 input double BuyGrid_Distance = 50;   // Grid distance (points) for opening additional Buy orders
+input string CommentForBuy = "";       // Comment for Buy orders
 
 // Variables for Sell orders
 input string SellSetting = "----- Sell Orders Settings -----"; // Sell Orders Settings
@@ -25,6 +26,7 @@ input double MaxSellPrice = 10000.0;   // Maximum price for Sell orders
 input double SellLotSize = 0.01;       // Lot size for Sell orders
 input double SellTP_Distance = 50;    // Take Profit distance (points) for Sell orders
 input double SellGrid_Distance = 50;  // Grid distance (points) for opening additional Sell orders
+input string CommentForSell = "";      // Comment for Sell orders
 
 // Variables for Other Setting
 input string OtherSetting = "----- Other settings -----"; // Other settings
@@ -119,7 +121,7 @@ void OnTick()
       if(!buyExists)
         {
          double buyTPPrice = buyCurrentPrice + BuyTP_Distance * Point;
-         int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, buyCurrentPrice, Slippage, 0, buyTPPrice, "Buy order", MagicNumber, 0, Blue);
+         int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, buyCurrentPrice, Slippage, 0, buyTPPrice, CommentForBuy + "_" + IntegerToString(MagicNumber), MagicNumber, 0, Blue);
          if(buyTicket < 0)
            {
             Print("Error opening Buy order: ", GetLastError());
@@ -136,7 +138,7 @@ void OnTick()
          if(buyCurrentPrice <= buyGridPrice)
            {
             double buyTPPrice = buyCurrentPrice + BuyTP_Distance * Point;
-            int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, buyCurrentPrice, Slippage, 0, buyTPPrice, "Grid Buy order", MagicNumber, 0, Blue);
+            int buyTicket = OrderSend(Symbol(), OP_BUY, BuyLotSize, buyCurrentPrice, Slippage, 0, buyTPPrice, CommentForBuy + "_" + IntegerToString(MagicNumber), MagicNumber, 0, Blue);
             if(buyTicket < 0)
               {
                Print("Error opening Grid Buy order: ", GetLastError());
@@ -170,7 +172,7 @@ void OnTick()
       if(!sellExists)
         {
          double sellTPPrice = sellCurrentPrice - SellTP_Distance * Point;
-         int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, sellCurrentPrice, Slippage, 0, sellTPPrice, "Sell order", MagicNumber, 0, Red);
+         int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, sellCurrentPrice, Slippage, 0, sellTPPrice, CommentForSell + "_" + IntegerToString(MagicNumber), MagicNumber, 0, Red);
          if(sellTicket < 0)
            {
             Print("Error opening Sell order: ", GetLastError());
@@ -187,7 +189,7 @@ void OnTick()
          if(sellCurrentPrice >= sellGridPrice)
            {
             double sellTPPrice = sellCurrentPrice - SellTP_Distance * Point;
-            int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, sellCurrentPrice, Slippage, 0, sellTPPrice, "Grid Sell order", MagicNumber, 0, Red);
+            int sellTicket = OrderSend(Symbol(), OP_SELL, SellLotSize, sellCurrentPrice, Slippage, 0, sellTPPrice, CommentForSell + "_" + IntegerToString(MagicNumber), MagicNumber, 0, Red);
             if(sellTicket < 0)
               {
                Print("Error opening Grid Sell order: ", GetLastError());
