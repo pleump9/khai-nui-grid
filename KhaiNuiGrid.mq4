@@ -102,16 +102,16 @@ void OnTick()
    if(EnableBuy && buyCurrentPrice >= MinBuyPrice && buyCurrentPrice <= MaxBuyPrice)
      {
       bool buyExists = false;
-      double minBuyOpenPrice = DBL_MAX;
+      double lastBuyOpenPrice = DBL_MAX;
 
       for(int i = 0; i < OrdersTotal(); i++)
         {
          if(OrderSelect(i, SELECT_BY_POS) && OrderType() == OP_BUY && OrderMagicNumber() == MagicNumber)
            {
             buyExists = true;
-            if(OrderOpenPrice() < minBuyOpenPrice)
+            if(OrderOpenPrice() < lastBuyOpenPrice)
               {
-               minBuyOpenPrice = OrderOpenPrice();
+               lastBuyOpenPrice = OrderOpenPrice();
               }
            }
         }
@@ -131,7 +131,7 @@ void OnTick()
         }
       else
         {
-         double buyGridPrice = minBuyOpenPrice - BuyGrid_Distance * Point;
+         double buyGridPrice = lastBuyOpenPrice - BuyGrid_Distance * Point;
 
          if(buyCurrentPrice <= buyGridPrice)
            {
@@ -153,16 +153,16 @@ void OnTick()
    if(EnableSell && sellCurrentPrice >= MinSellPrice && sellCurrentPrice <= MaxSellPrice)
      {
       bool sellExists = false;
-      double maxSellOpenPrice = 0;
+      double lastSellOpenPrice = 0;
 
       for(int i = 0; i < OrdersTotal(); i++)
         {
          if(OrderSelect(i, SELECT_BY_POS) && OrderType() == OP_SELL && OrderMagicNumber() == MagicNumber)
            {
             sellExists = true;
-            if(OrderOpenPrice() > maxSellOpenPrice)
+            if(OrderOpenPrice() > lastSellOpenPrice)
               {
-               maxSellOpenPrice = OrderOpenPrice();
+               lastSellOpenPrice = OrderOpenPrice();
               }
            }
         }
@@ -182,7 +182,7 @@ void OnTick()
         }
       else
         {
-         double sellGridPrice = maxSellOpenPrice + SellGrid_Distance * Point;
+         double sellGridPrice = lastSellOpenPrice + SellGrid_Distance * Point;
 
          if(sellCurrentPrice >= sellGridPrice)
            {
