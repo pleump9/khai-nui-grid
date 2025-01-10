@@ -44,6 +44,8 @@ string eaInfo = EA_NAME + "\n" + Owner + "\n" + OwnerLink;
 //+------------------------------------------------------------------+
 int OnInit()
   {
+// Create the dashboard
+   CreateDashboard();
    return(INIT_SUCCEEDED);
   }
 //+------------------------------------------------------------------+
@@ -51,6 +53,8 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
   {
+// Remove all dashboard objects on deinitialization
+   ObjectsDeleteAll(0);
   }
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
@@ -203,29 +207,10 @@ void OnTick()
      }
 
 // Display results on the screen
-   string sellInfo = StringFormat("Sell Orders: %d \nSell Profit: %.2f", sellCount, sellProfit);
-   string buyInfo = StringFormat("Buy Orders: %d \nBuy Profit: %.2f", buyCount, buyProfit);
-   string totalInfo = StringFormat("Total Orders: %d \nTotal Profit: %.2f", totalOrders, totalProfit);
-   Comment(
-      "\n" +
-      "--------------------" +
-      "\n" +
-      eaInfo +
-      "\n" +
-      "--------------------" +
-      "\n" +
-      sellInfo +
-      "\n" +
-      "--------------------" +
-      "\n" +
-      buyInfo +
-      "\n" +
-      "--------------------" +
-      "\n" +
-      totalInfo +
-      "\n" +
-      "--------------------"
-   );
+   string sellInfo = StringFormat("Sell Orders Count: %d \nSell Profit: %.2f", sellCount, sellProfit);
+   string buyInfo = StringFormat("Buy Orders Count: %d \nBuy Profit: %.2f", buyCount, buyProfit);
+   string totalInfo = StringFormat("Total Orders Count: %d \nTotal Profit: %.2f", totalOrders, totalProfit);
+   UpdateDashboard(sellInfo, buyInfo, totalInfo);
   }
 
 //+------------------------------------------------------------------+
@@ -264,4 +249,102 @@ bool CheckVolumeValue(double volume,string &description)
   }
 //+------------------------------------------------------------------+
 
+//+------------------------------------------------------------------+
+//| Create Dashboard                                                 |
+//+------------------------------------------------------------------+
+void CreateDashboard() {
+   int xOffset = 10;         // Horizontal offset
+   int yOffset = 20;         // Vertical offset
+   int dashboardWidth = 300;  // Width of the dashboard
+   int dashboardHeight = 300; // Height of the dashboard
+   color backgroundColor = clrBlack; // Background color
+   
+   // Add text labels on top of the background
+   int fontSize = 10;        // Font size
+   string fontName = "Arial"; // Font name
+
+   // Create a solid background using OBJ_RECTANGLE_LABEL
+   string dashboardBg = "DashboardBackground";
+   if (!ObjectCreate(0, dashboardBg, OBJ_RECTANGLE_LABEL, 0, 0, 0)) {
+      Print("Failed to create dashboard background");
+      return;
+   }
+   ObjectSetInteger(0, dashboardBg, OBJPROP_CORNER, 0); // Top-left corner
+   ObjectSetInteger(0, dashboardBg, OBJPROP_XDISTANCE, xOffset); // X Offset
+   ObjectSetInteger(0, dashboardBg, OBJPROP_YDISTANCE, yOffset); // Y Offset
+   ObjectSetInteger(0, dashboardBg, OBJPROP_XSIZE, dashboardWidth); // Width
+   ObjectSetInteger(0, dashboardBg, OBJPROP_YSIZE, dashboardHeight); // Height
+   ObjectSetInteger(0, dashboardBg, OBJPROP_COLOR, backgroundColor); // Background color
+   ObjectSetInteger(0, dashboardBg, OBJPROP_BORDER_COLOR, clrBlack); // Border color
+   ObjectSetInteger(0, dashboardBg, OBJPROP_STYLE, STYLE_SOLID); // Solid fill
+   ObjectSetInteger(0, dashboardBg, OBJPROP_BGCOLOR, backgroundColor); // Background color
+
+   // Add labels for Buy Settings
+   int lineHeight = 15; // Line height for text labels
+   int currentY = yOffset + 10; // Start position for text
+
+   CreateTextLabel("BuySetting", "Buy Settings:", xOffset + 10, currentY, fontSize, fontName, clrWhite);
+   currentY += lineHeight;
+   CreateTextLabel("EnableBuy", StringFormat("Enable Buy: %s", EnableBuy ? "Yes" : "No"), xOffset + 10, currentY, fontSize, fontName, clrLime);
+   currentY += lineHeight;
+   CreateTextLabel("BuyRange", StringFormat("Buy Range: %.2f - %.2f", MinBuyPrice, MaxBuyPrice), xOffset + 10, currentY, fontSize, fontName, clrLime);
+   currentY += lineHeight;
+   CreateTextLabel("BuyLot", StringFormat("Buy Lot Size: %.2f", BuyLotSize), xOffset + 10, currentY, fontSize, fontName, clrLime);
+   currentY += lineHeight;
+   CreateTextLabel("BuyTP", StringFormat("Buy TP Distance: %.0f points", BuyTP_Distance), xOffset + 10, currentY, fontSize, fontName, clrLime);
+   currentY += lineHeight;
+   CreateTextLabel("BuyGrid", StringFormat("Buy Grid Distance: %.0f points", BuyGrid_Distance), xOffset + 10, currentY, fontSize, fontName, clrLime);
+
+   // Add labels for Sell Settings
+   currentY += lineHeight * 2; // Add spacing
+   CreateTextLabel("SellSetting", "Sell Settings:", xOffset + 10, currentY, fontSize, fontName, clrWhite);
+   currentY += lineHeight;
+   CreateTextLabel("EnableSell", StringFormat("Enable Sell: %s", EnableSell ? "Yes" : "No"), xOffset + 10, currentY, fontSize, fontName, clrRed);
+   currentY += lineHeight;
+   CreateTextLabel("SellRange", StringFormat("Sell Range: %.2f - %.2f", MinSellPrice, MaxSellPrice), xOffset + 10, currentY, fontSize, fontName, clrRed);
+   currentY += lineHeight;
+   CreateTextLabel("SellLot", StringFormat("Sell Lot Size: %.2f", SellLotSize), xOffset + 10, currentY, fontSize, fontName, clrRed);
+   currentY += lineHeight;
+   CreateTextLabel("SellTP", StringFormat("Sell TP Distance: %.0f points", SellTP_Distance), xOffset + 10, currentY, fontSize, fontName, clrRed);
+   currentY += lineHeight;
+   CreateTextLabel("SellGrid", StringFormat("Sell Grid Distance: %.0f points", SellGrid_Distance), xOffset + 10, currentY, fontSize, fontName, clrRed);
+
+   // Add labels for Other Settings
+   currentY += lineHeight * 2; // Add spacing
+   CreateTextLabel("OtherSetting", "Other Settings:", xOffset + 10, currentY, fontSize, fontName, clrWhite);
+   currentY += lineHeight;
+   CreateTextLabel("Slippage", StringFormat("Slippage: %d", Slippage), xOffset + 10, currentY, fontSize, fontName, clrYellow);
+   currentY += lineHeight;
+   CreateTextLabel("MagicNumber", StringFormat("Magic Number: %d", MagicNumber), xOffset + 10, currentY, fontSize, fontName, clrYellow);
+}
+
+
+//+------------------------------------------------------------------+
+//| Update Dashboard                                                 |
+//+------------------------------------------------------------------+
+void UpdateDashboard(string sellInfo, string buyInfo, string totalInfo)
+  {
+   ObjectSetString(0, "SellInfo", OBJPROP_TEXT, sellInfo); // Update sell info
+   ObjectSetString(0, "BuyInfo", OBJPROP_TEXT, buyInfo);   // Update buy info
+   ObjectSetString(0, "TotalInfo", OBJPROP_TEXT, totalInfo); // Update total info
+  }
+
+//+------------------------------------------------------------------+
+//| Create Text Label for dashboard                                  |
+//+------------------------------------------------------------------+
+void CreateTextLabel(string name, string text, int xOffset, int yOffset, int fontSize, string fontName, color textColor)
+  {
+   if(!ObjectCreate(0, name, OBJ_LABEL, 0, 0, 0))
+     {
+      Print("Failed to create label: ", name);
+      return;
+     }
+   ObjectSetInteger(0, name, OBJPROP_CORNER, 0); // Top-left corner
+   ObjectSetInteger(0, name, OBJPROP_XDISTANCE, xOffset);
+   ObjectSetInteger(0, name, OBJPROP_YDISTANCE, yOffset);
+   ObjectSetInteger(0, name, OBJPROP_FONTSIZE, fontSize);
+   ObjectSetString(0, name, OBJPROP_FONT, fontName);
+   ObjectSetInteger(0, name, OBJPROP_COLOR, textColor);
+   ObjectSetString(0, name, OBJPROP_TEXT, text);
+  }
 //+------------------------------------------------------------------+
